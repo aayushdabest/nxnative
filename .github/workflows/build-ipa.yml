@@ -1,0 +1,55 @@
+name: Build Switch IPA
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ipa:
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+
+      - name: Check Xcode and Metal Toolchain
+        run: |
+          xcode-select -p
+          xcodebuild -downloadComponent MetalToolchain || true
+
+      - name: Install Dependencies
+        run: |
+          brew install xcodegen zstd glslang
+          python3 -m pip install --upgrade pip
+          python3 -m pip install lz4 "capstone>=5,<6" fonttools nsz zbic gdown
+
+      - name: Download Keys, Base Game, and Update
+        env:
+          KEYS_URL: ${{ secrets.KEYS_URL }}
+          GAME_URL: ${{ secrets.GAME_URL }}
+          UPDATE_URL: ${{ secrets.UPDATE_URL }}
+        run: |
+          mkdir -p ~/work/keys ~/work/game ~/work/out
+          gdown --fuzzy "$KEYS_URL" -O ~/work/keys/prod.keys
+          gdown --fuzzy "$GAME_URL" -O ~/work/game/base.nsp
+          if [ -n "$UPDATE_URL" ]; then
+            gdown --fuzzy "$UPDATE_URL" -O ~/work/game/update.nsp
+          fi
+          ls -lh ~/work/keys ~/work/game
+
+      - name: Build Native iOS IPA
+        run: |
+          python3 scripts/build_ipa_from_nsp.py ~/work/game -k ~/work/keys/prod.keys -o ~/work/out --romfs separate
+          ls -lh ~/work/out
+
+      - name: Clean Up Raw Game Files
+        if: always()
+        run: |
+          rm -rf ~/work/game ~/work/keys
+
+      - name: Upload Finished IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: MarioWonder-iOS
+          path: ~/work/out/*
+          retention-days: 3
