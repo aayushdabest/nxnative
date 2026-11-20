@@ -38,7 +38,7 @@ jobs:
 
       - name: Build Native iOS IPA
         run: |
-          python3 scripts/build_ipa_from_nsp.py ~/work/game -k ~/work/keys/prod.keys -o ~/work/out --romfs separate
+          python3 scripts/build_ipa_from_nsp.py ~/work/game -k ~/work/keys/prod.keys -o ~/work/out --romfs separate --allow-other-metal
           ls -lh ~/work/out
 
       - name: Clean Up Raw Game Files
