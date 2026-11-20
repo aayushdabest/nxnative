@@ -29,10 +29,10 @@ jobs:
           UPDATE_URL: ${{ secrets.UPDATE_URL }}
         run: |
           mkdir -p ~/work/keys ~/work/game ~/work/out
-          gdown --fuzzy "$KEYS_URL" -O ~/work/keys/prod.keys
-          gdown --fuzzy "$GAME_URL" -O ~/work/game/base.nsp
+          gdown "$KEYS_URL" -O ~/work/keys/prod.keys
+          gdown "$GAME_URL" -O ~/work/game/base.nsp
           if [ -n "$UPDATE_URL" ]; then
-            gdown --fuzzy "$UPDATE_URL" -O ~/work/game/update.nsp
+            gdown "$UPDATE_URL" -O ~/work/game/update.nsp
           fi
           ls -lh ~/work/keys ~/work/game
 
